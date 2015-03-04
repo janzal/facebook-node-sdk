@@ -32,6 +32,7 @@
                 , 'scope':  null
                 , 'redirectUri': null
                 , 'proxy': null
+                , 'apiVersion': null
             }
             , readOnlyCalls = {
                   'admin.getallocation': true
@@ -245,6 +246,11 @@
                 params.appsecret_proof = getAppSecretProof(params.access_token, opts.appSecret);
             }
 
+            var api_version = getApiVersion();
+            if (api_version) {
+                path =  api_version + '/' + path;
+            }
+
             if(domain === 'graph') {
                 uri = 'https://graph.facebook.com/' + path;
                 isOAuthRequest = /^oauth.*/.test('oauth/');
@@ -267,7 +273,7 @@
                     }
                     uri += 'access_token=' + encodeURIComponent(params.access_token);
                     delete params['access_token'];
-                    
+
                     if(params.appsecret_proof) {
                         uri += '&appsecret_proof=' + encodeURIComponent(params.appsecret_proof);
                         delete params['appsecret_proof'];
@@ -303,7 +309,7 @@
                 }
                 uri = uri.substring(0, uri.length -1);
             };
-            
+
             pool = { maxSockets : options('maxSockets') || Number(process.env.MAX_SOCKETS) || 5 };
             requestOptions = {
                   method: method
@@ -386,7 +392,15 @@
         setAccessToken = function (accessToken) {
             options({'accessToken': accessToken});
         };
-        
+
+        getApiVersion = function () {
+            return options('apiVersion');
+        };
+
+        setApiVersion = function (version) {
+            options({ 'apiVersion': version });
+        };
+
         getAppSecretProof = function (accessToken, appSecret) {
             var hmac = crypto.createHmac('sha256', appSecret);
             hmac.update(accessToken);
@@ -488,7 +502,7 @@
                             // ping Facebook for instrumentation requirement
                             pingFacebook(opts[key]);
                             break;
-                        
+
                         case 'appSecret':
                         case 'accessToken':
                             opts.appSecretProof =
@@ -651,7 +665,7 @@
                 if(options('proxy')) {
                     requestOptions['proxy'] = options('proxy');
                 }
-			
+
                 request(
                     requestOptions
                     , function(error, response, body) {
@@ -667,6 +681,8 @@
             , napi: napi // this method does not exist in fb js sdk
             , getAccessToken: getAccessToken
             , setAccessToken: setAccessToken // this method does not exist in fb js sdk
+            , getApiVersion: getApiVersion
+            , setApiVersion: setApiVersion // this method does not exist in fb js sdk
             , parseSignedRequest : parseSignedRequest // this method does not exist in fb js sdk
             , getLoginUrl: getLoginUrl // this method does not exist in fb js sdk
             , options: options // this method does not exist in the fb js sdk

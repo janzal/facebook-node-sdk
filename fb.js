@@ -246,7 +246,7 @@
                 params.appsecret_proof = getAppSecretProof(params.access_token, opts.appSecret);
             }
 
-            var api_version = getApiVersion();
+            var api_version = params.api_version || getApiVersion();
             if (api_version) {
                 path =  api_version + '/' + path;
             }

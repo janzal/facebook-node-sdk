@@ -340,7 +340,7 @@
 
                 if(isOAuthRequest && response && response.statusCode === 200 &&
                     response.headers && /.*text\/plain.*/.test(response.headers['content-type'])) {
-                    cb(parseOAuthApiResponse(body));
+                    cb(parseOAuthApiResponse(body, params['response_headers'] ? response.headers : null));
                 } else {
                     var json;
                     try {
@@ -354,12 +354,15 @@
                           Error: ex
                       }};
                     }
+                    if (params['response_headers']) {
+                      json.headers = response.headers;
+                    }
                     cb(json);
                 }
             });
         };
 
-        parseOAuthApiResponse = function (body) {
+        parseOAuthApiResponse = function (body, response_headers) {
             var   result
                 , key
                 , value
@@ -377,6 +380,10 @@
                         result[split[0]] = value;
                     }
                 }
+            }
+
+            if (response_headers) {
+              result['headers'] = response_headers;
             }
 
             return result;
